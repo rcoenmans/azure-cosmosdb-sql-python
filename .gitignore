@@ -1,3 +1,4 @@
 build
 dist
 azure_cosmosdb_sql.egg-info
+__pycache__
