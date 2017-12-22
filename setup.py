@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # -----------------------------------------------------------------------------
 # The MIT License (MIT)
 # Copyright (c) 2017 Robbie Coenmans
@@ -24,44 +22,37 @@
 # -----------------------------------------------------------------------------
 
 import sys
+import os
 
 from setuptools import setup, find_packages
 
-try:
-    from azure_bdist_wheel import cmdclass
-except ImportError:
-    from distutils import log as logger
-
-    logger.warn("Wheel is not available, disabling bdist_wheel hook")
-    cmdclass = {}
-
-setup(
-    name='azure-cosmosdb-sql',
-    version='0.0.1',
-    description='Microsoft Azure CosmosDB SQL API Client Library for Python',
-    long_description=open('README.rst', 'r').read(),
-    license='Apache License 2.0',
-    author='Robbie Coenmans',
-    author_email='robbie.coenmans@outlook.com',
-    url='https://github.com/rcoenmans/azure-cosmosdb-sql-python',
-    classifiers=[
-        'Development Status :: 4 - Beta',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'License :: OSI Approved :: Apache Software License',
-    ],
-    zip_safe=False,
-    packages=find_packages(),
-    install_requires=[
-                         'azure-common>=1.1.5',
-                         'requests',
-                         'azure-storage-common>=0.37.1,<0.38.0'
-                     ] + (['futures'] if sys.version_info < (3, 0) else []),
-    cmdclass=cmdclass
-)
+if __name__ == "__main__":
+    setup(
+        name='azure-cosmosdb-sql',
+        version='0.0.1',
+        description='Microsoft Azure CosmosDB SQL API Client Library for Python',
+        long_description=open('README.rst', 'r').read(),
+        license='MIT License',
+        author='Robbie Coenmans',
+        author_email='robbie.coenmans@outlook.com',
+        url='https://github.com/rcoenmans/azure-cosmosdb-sql-python',
+        classifiers=[
+            'Development Status :: 1 - Alpha',
+            'Programming Language :: Python',
+            'Programming Language :: Python :: 2',
+            'Programming Language :: Python :: 2.7',
+            'Programming Language :: Python :: 3',
+            'Programming Language :: Python :: 3.3',
+            'Programming Language :: Python :: 3.4',
+            'Programming Language :: Python :: 3.5',
+            'Programming Language :: Python :: 3.6',
+            'License :: OSI Approved :: MIT License',
+        ],
+        zip_safe=False,
+        packages=find_packages(),
+        install_requires=[
+            'azure-common>=1.1.5',
+            'requests',
+            'azure-storage-common>=0.37.1,<0.38.0'
+        ] + (['futures'] if sys.version_info < (3, 0) else [])
+    )
