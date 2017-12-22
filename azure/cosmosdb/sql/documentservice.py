@@ -24,11 +24,11 @@
 import requests
 import datetime
 
-from _auth import (
+from ._auth import (
     _DocumentServiceAuthentication
 )
 
-from _constants import (
+from ._constants import (
     DEFAULT_X_MS_VERSION,
     DEFAULT_USER_AGENT_STRING,
 
@@ -37,22 +37,25 @@ from _constants import (
     SERVICE_HOST_BASE
 )
 
-from _error import (
+from ._error import (
     ERROR_MISSING_INFO
 )
 
-from azure.storage.common._http import (
-    HTTPResponse,
-    HTTPRequest,
-    _HTTPClient
-)
+from .models import Database
+from .models import Collection
+
+from ._http import HTTPRequest
+from ._http import HTTPResponse
+from ._http.httpclient import _HTTPClient
 
 class DocumentService(object):
     def __init__(self, account_name, account_key):
         self.account_name = account_name
         self.account_key = account_key
 
-        if not self.account_key:
+        if self.account_key:
+            self.authentication = _DocumentServiceAuthentication(self.account_key)
+        else:
             raise ValueError(ERROR_MISSING_INFO)
 
         self._http_client = _HTTPClient(
@@ -89,12 +92,10 @@ class DocumentService(object):
             'x-ms-documentdb-query-iscontinuationexpected': False,
             'x-ms-date': datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
         }
+        request.headers['authorization'] = self.authentication.get_authorization_token(database_name, 'dbs', 'GET', request.headers)
 
-        auth = _DocumentServiceAuthentication(self)
-        auth_token = auth.get_authorization_token(database_name, 'dbs', 'GET', request.headers)
-        request.headers['authorization'] = auth_token
-
-        self._perform_request(request)
+        # self._perform_request(request)
+        return Database()
 
 
     def _get_host_location(self):
@@ -103,11 +104,11 @@ class DocumentService(object):
         return location
 
 
-    def _get_path(resource_name, resource_id=None):
+    def _get_path(self, resource_type, resource_id):
         if resource_id:
-            return '/{}/{}'.format(resource_name, resource_id)
+            return '/{}/{}'.format(resource_type, resource_id)
         else:
-            return '/{}'.format(resource_name)
+            return '/{}'.format(resource_type)
 
 
     def _perform_request(self, request):

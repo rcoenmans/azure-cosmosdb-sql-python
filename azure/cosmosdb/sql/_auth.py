@@ -27,17 +27,14 @@ import hmac
 import base64
 
 class _DocumentServiceAuthentication(object):
-    def __init__(self, document_service=None):
-        self.document_service = document_service
+    def __init__(self, account_key):
+        self.account_key = account_key
 
-    def get_authorization_token(self, resource_id = '', resource_type = '', verb = '', headers):
-        account_key = self.document_service.account_key
+    def get_authorization_token(self, resource_id, resource_type, verb, headers):
+        verb = verb.lower()
+        resource_type = resource_type.lower()
+        x_date = str(headers['x-ms-date']).lower()
+        date   = str(headers['date']).lower()
 
-
-
-        text = '{verb}\n{resource_type}\n{resource_id_or_fullname}\n{x_date}\n{http_date}\n'.format(
-            verb=(verb.lower() or ''),
-            resource_type=(resource_type.lower() or ''),
-            resource_id_or_fullname=(resource_id_or_fullname or ''),
-            x_date=headers.get(http_constants.HttpHeaders.XDate, '').lower(),
-            http_date=headers.get(http_constants.HttpHeaders.HttpDate, '').lower())
+        text = '{}\n{}\n{}\n{}\n{}\n'.format(verb, resource_type, resource_id, x_date, date)
+        return text

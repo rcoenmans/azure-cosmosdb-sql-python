@@ -22,33 +22,18 @@
 # -----------------------------------------------------------------------------
 
 import unittest
-import datetime
 
-from azure.cosmosdb.sql import (
-    DocumentService,
-    _DocumentServiceAuthentication
-)
+from azure.cosmosdb.sql.documentservice import DocumentService
 
-class DocumentServiceAuthenticationTest(unittest.TestCase):
+class DocumentServiceTest(unittest.TestCase):
     def setUp(self):
-        self.ds = DocumentService(
-            'galaxy', 
-            'ZACfYMyDQHyGf0UZ2UdWCcfTyfQ0zmQnBLJ49AELlqBaHWseoRWpia7IOkQPXHKFfvFs98MMKNcUFY0CUfrDjA==')
-        self.auth = _DocumentServiceAuthentication(ds)
-
-    
-    @record
-    def test_create_auth_token(self):
-        # Action
-        headers = {
-            'date': datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT'),
-            'x-ms-date': datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
-        }
-        auth_token = self.auth.get_authorization_token('ToDoList', 'dbs', 'GET', headers)
+        self.account_name = 'galaxy'
+        self.account_key  = 'ZACfYMyDQHyGf0UZ2UdWCcfTyfQ0zmQnBLJ49AELlqBaHWseoRWpia7IOkQPXHKFfvFs98MMKNcUFY0CUfrDjA=='
         
-        # Asserts
-        self.assertLess(0, len(auth_token))
+    def test_get_datebase(self):
+        database_name = 'ToDoList'
 
+        ds = DocumentService(self.account_name, self.account_key)
+        db = ds.get_database(database_name)
 
-if __name__ == '__main__':
-    unittest.main()
+        self.assertIsNotNone(db)

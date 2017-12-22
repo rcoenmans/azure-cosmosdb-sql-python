@@ -21,34 +21,25 @@
 # SOFTWARE.
 # -----------------------------------------------------------------------------
 
-import sys
-import os
+import unittest
+import datetime
 
-from setuptools import setup, find_packages
+from azure.cosmosdb.sql._auth import _DocumentServiceAuthentication
 
-if __name__ == "__main__":
-    setup(
-        name='azure-cosmosdb-sql',
-        version='0.0.1',
-        description='Microsoft Azure CosmosDB SQL API Client Library for Python',
-        long_description=open('README.rst', 'r').read(),
-        license='MIT License',
-        author='Robbie Coenmans',
-        author_email='robbie.coenmans@outlook.com',
-        url='https://github.com/rcoenmans/azure-cosmosdb-sql-python',
-        classifiers=[
-            'Development Status :: 1 - Alpha',
-            'Programming Language :: Python',
-            'Programming Language :: Python :: 2',
-            'Programming Language :: Python :: 2.7',
-            'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.3',
-            'Programming Language :: Python :: 3.4',
-            'Programming Language :: Python :: 3.5',
-            'Programming Language :: Python :: 3.6',
-            'License :: OSI Approved :: MIT License',
-        ],
-        zip_safe=False,
-        packages=find_packages(),
-        install_requires=['requests'] + (['futures'] if sys.version_info < (3, 0) else [])
-    )
+class DocumentServiceAuthenticationTest(unittest.TestCase):
+    def setUp(self):
+        self.account_key = 'ZACfYMyDQHyGf0UZ2UdWCcfTyfQ0zmQnBLJ49AELlqBaHWseoRWpia7IOkQPXHKFfvFs98MMKNcUFY0CUfrDjA=='
+        self.authentication = _DocumentServiceAuthentication(self.account_key)
+
+    def test_get_authorization_token(self):
+        # Required HTTP headers for token generation
+        headers = {
+            'date': datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT'),
+            'x-ms-date': datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
+        }
+
+        # Generate Authorization token
+        auth_token = self.authentication.get_authorization_token('ToDoList', 'dbs', 'GET', headers)
+
+        # Asserts
+        self.assertLess(0, len(auth_token))
