@@ -31,10 +31,18 @@ class _DocumentServiceAuthentication(object):
         self.account_key = account_key
 
     def get_authorization_token(self, resource_id, resource_type, verb, headers):
-        verb = verb.lower()
-        resource_type = resource_type.lower()
-        x_date = str(headers['x-ms-date']).lower()
-        date   = str(headers['date']).lower()
+        key = base64.b64decode(self.account_key)
+        msg = '{}\n{}\n{}\n{}\n{}\n'.format(
+            verb.lower(), 
+            resource_type.lower(), 
+            resource_id, 
+            str(headers['x-ms-date']).lower(), 
+            str(headers['date']).lower())
+         
+        digest = hmac.new(
+            key, 
+            msg.encode('utf-8'), 
+            sha256).digest()
+        signature = base64.encodebytes(digest).decode('utf-8')
 
-        text = '{}\n{}\n{}\n{}\n{}\n'.format(verb, resource_type, resource_id, x_date, date)
-        return text
+        return 'type=master&ver=1.0&sig={}'.format(signature[:-1])

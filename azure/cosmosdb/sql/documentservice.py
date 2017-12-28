@@ -81,7 +81,7 @@ class DocumentService(object):
     def get_database(self, database_name):
         request = HTTPRequest()
         request.method = 'GET'
-        request.host_locations = self._get_host_location()
+        request.host = self._get_host_location()
         request.path = self._get_path('dbs', database_name)
         request.headers = {
             'Cache-Control': 'no-cache',
@@ -89,19 +89,17 @@ class DocumentService(object):
             'Accept': 'application/json',
             'date': datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT'),
             'x-ms-version': DEFAULT_X_MS_VERSION,
-            'x-ms-documentdb-query-iscontinuationexpected': False,
+            'x-ms-documentdb-query-iscontinuationexpected': str(False),
             'x-ms-date': datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
         }
         request.headers['authorization'] = self.authentication.get_authorization_token(database_name, 'dbs', 'GET', request.headers)
 
-        # self._perform_request(request)
+        self._perform_request(request)
         return Database()
 
 
     def _get_host_location(self):
-        location = {}
-        location['primary'] = '{}.{}'.format(self.account_name, SERVICE_HOST_BASE)
-        return location
+        return '{}.{}'.format(self.account_name, SERVICE_HOST_BASE)
 
 
     def _get_path(self, resource_type, resource_id):
