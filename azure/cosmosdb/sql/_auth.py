@@ -21,28 +21,36 @@
 # SOFTWARE.
 # -----------------------------------------------------------------------------
 
-from hashlib import sha256
+from six.moves.urllib.parse import quote as urllib_quote
 
-import hmac
-import base64
+from ._conversion import (
+    _sign_string,
+    _lower
+)
 
-class _DocumentServiceAuthentication(object):
-    def __init__(self, account_key):
-        self.account_key = account_key
+def _get_authorization_token(account_key, resource_link, resource_type, verb, date):
+    '''
+    Returns the authorization header.
 
-    def get_authorization_token(self, resource_id, resource_type, verb, headers):
-        key = base64.b64decode(self.account_key)
-        msg = '{}\n{}\n{}\n{}\n{}\n'.format(
-            verb.lower(), 
-            resource_type.lower(), 
-            resource_id, 
-            str(headers['x-ms-date']).lower(), 
-            str(headers['date']).lower())
-         
-        digest = hmac.new(
-            key, 
-            msg.encode('utf-8'), 
-            sha256).digest()
-        signature = base64.encodebytes(digest).decode('utf-8')
-
-        return 'type=master&ver=1.0&sig={}'.format(signature[:-1])
+    :param str account_key:
+        The account key.
+    :param str resource_link:
+        Identity property of the resource that the request is directed at, 
+        eg. "dbs/MyDatabase/colls/MyCollection".
+    :param str resource_type:
+        Type of resource that the request is for, eg. "dbs", "colls", "docs".
+    :param str verb:
+        HTTP verb, such as GET, POST or PUT.
+    :param str date:
+        String of UTC date and time in HTTP-date format. This same date 
+        (in same format) also needs to be passed as x-ms-date header in the 
+        request.
+    '''
+    string_to_sign = '{}\n{}\n{}\n{}\n\n'.format(
+        _lower(verb),
+        _lower(resource_type),
+        resource_link,
+        _lower(date)
+    )
+    signature = _sign_string(account_key, string_to_sign)
+    return urllib_quote('type=master&ver=1.0&sig={}'.format(signature), '-_.!~*\'()')

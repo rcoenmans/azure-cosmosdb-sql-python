@@ -23,3 +23,10 @@
 
 ERROR_MISSING_INFO = 'You need to provide an account name and either an account_key or sas_token when creating a document service.'
 ERROR_VALUE_SHOULD_BE_BYTES_OR_STREAM = '{0} should be of type bytes or a readable file-like/io.IOBase stream object.'
+ERROR_VALUE_SHOULD_BE_SEEKABLE_STREAM = '{0} should be a seekable file-like/io.IOBase stream object.'
+
+ERROR_VALUE_NONE = '{0} should not be None.'
+
+def _validate_not_none(param_name, param):
+    if param is None:
+        raise ValueError(ERROR_VALUE_NONE.format(param_name))

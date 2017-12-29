@@ -25,7 +25,7 @@ import requests
 import datetime
 
 from ._auth import (
-    _DocumentServiceAuthentication
+    _get_authorization_token
 )
 
 from ._constants import (
@@ -38,7 +38,13 @@ from ._constants import (
 )
 
 from ._error import (
-    ERROR_MISSING_INFO
+    ERROR_MISSING_INFO,
+    _validate_not_none
+)
+
+from ._conversion import (
+    _bool_to_str,
+    _datetime_to_utc_string
 )
 
 from .models import Database
@@ -52,11 +58,6 @@ class DocumentService(object):
     def __init__(self, account_name, account_key):
         self.account_name = account_name
         self.account_key = account_key
-
-        if self.account_key:
-            self.authentication = _DocumentServiceAuthentication(self.account_key)
-        else:
-            raise ValueError(ERROR_MISSING_INFO)
 
         self._http_client = _HTTPClient(
             protocol = DEFAULT_PROTOCOL,
@@ -73,12 +74,23 @@ class DocumentService(object):
         request.headers = {
             'Cache-Control': 'no-cache',
             'User-Agent': DEFAULT_USER_AGENT_STRING,
+            'Accept': 'application/json',
             'x-ms-version': DEFAULT_X_MS_VERSION,
             'x-ms-documentdb-query-iscontinuationexpected': False,
             'x-ms-date': (datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT'))
         }
 
     def get_database(self, database_name):
+        '''
+        Retrieves a Database by its name.
+ 
+        :param str database_name:
+            The name of the database to retrieve.
+        :return: A Database.
+        :rtype: Database(:class:`~azure.cosmosdb.sql.models.Database`)
+        '''
+        _validate_not_none('database_name', database_name)
+
         request = HTTPRequest()
         request.method = 'GET'
         request.host = self._get_host_location()
@@ -87,12 +99,17 @@ class DocumentService(object):
             'Cache-Control': 'no-cache',
             'User-Agent': DEFAULT_USER_AGENT_STRING,
             'Accept': 'application/json',
-            'date': datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT'),
             'x-ms-version': DEFAULT_X_MS_VERSION,
-            'x-ms-documentdb-query-iscontinuationexpected': str(False),
-            'x-ms-date': datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
+            'x-ms-documentdb-query-iscontinuationexpected': _bool_to_str(False),
+            'x-ms-date': _datetime_to_utc_string(datetime.datetime.utcnow())
         }
-        request.headers['authorization'] = self.authentication.get_authorization_token(database_name, 'dbs', 'GET', request.headers)
+
+        request.headers['authorization'] = _get_authorization_token(
+            self.account_key, 
+            'dbs/{}'.format(database_name), 
+            'dbs', 
+            'GET', 
+            request.headers['x-ms-date'])
 
         self._perform_request(request)
         return Database()
