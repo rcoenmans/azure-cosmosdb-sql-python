@@ -24,22 +24,22 @@
 import unittest
 import datetime
 
-from azure.cosmosdb.sql._auth import _DocumentServiceAuthentication
+from azure.cosmosdb.sql._auth import _get_authorization_token
 
-class DocumentServiceAuthenticationTest(unittest.TestCase):
+class AuthTest(unittest.TestCase):
     def setUp(self):
         self.account_key = 'ZACfYMyDQHyGf0UZ2UdWCcfTyfQ0zmQnBLJ49AELlqBaHWseoRWpia7IOkQPXHKFfvFs98MMKNcUFY0CUfrDjA=='
-        self.authentication = _DocumentServiceAuthentication(self.account_key)
+        self.resource_link = 'dbs/ToDoList'
+        self.resource_type = 'dbs'
 
     def test_get_authorization_token(self):
-        # Required HTTP headers for token generation
-        headers = {
-            'date': datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT'),
-            'x-ms-date': datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
-        }
-
         # Generate Authorization token
-        auth_token = self.authentication.get_authorization_token('ToDoList', 'dbs', 'GET', headers)
+        auth_token = _get_authorization_token(
+            self.account_key, 
+            self.resource_link, 
+            self.resource_type, 
+            'GET', 
+            datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT'))
 
         # Asserts
         self.assertLess(0, len(auth_token))
