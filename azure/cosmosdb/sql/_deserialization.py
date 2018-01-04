@@ -21,47 +21,27 @@
 # SOFTWARE.
 # -----------------------------------------------------------------------------
 
-import sys
+from json import loads
+from dateutil import parser
 
-if sys.version_info < (3,):
-    from collections import Iterable
+from .models import (
+    ResourceProperties
+)
 
-    _unicode_type = unicode
-else:
-    from collections.abc import Iterable
+def _parse_base_properties(response):
+    '''
+    Extracts basic response headers.
+    '''
+    resource_properties = ResourceProperties()
+    resource_properties.last_modified = parser.parse(response.headers.get('last-modified'))
+    resource_properties.etag = response.headers.get('etag')
 
-    _unicode_type = str
+    return resource_properties
 
-class ResourceProperties(object):
-    def __init__(self):
-        self.last_modified = None
-        self.etag = None
-
-
-class Database(object):
-    def __init__(self):
-        self.id = None
-        self._rid = None
-        self._self = None
-        self._etag = None
-        self._colls = None
-        self._users = None
-        self._ts = None
-
-    def _parse(obj):
-        db = Database()
-        db.id = obj['id']
-        db._rid = obj['_rid']
-        db._self = obj['_self']
-        db._etag = obj['_etag']
-        db._colls = obj['_colls']
-        db._users = obj['_users']
-        db._ts = int(obj['_ts'])
-        return db
-
-
-class Collection(object):
-    def __init__(self):
-        self.id = None
-        self.rid= None
-        self.indexing_policy = None
+def _parse_json(response, result_class):
+    if response is None or response.body is None:
+        return None
+    
+    str = response.body.decode('UTF-8')
+    obj = loads(str)
+    return result_class._parse(obj)

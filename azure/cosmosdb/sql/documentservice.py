@@ -21,8 +21,8 @@
 # SOFTWARE.
 # -----------------------------------------------------------------------------
 
-import requests
 import datetime
+import requests
 
 from ._auth import (
     _get_authorization_token
@@ -47,6 +47,10 @@ from ._conversion import (
     _datetime_to_utc_string
 )
 
+from ._deserialization import (
+    _parse_json
+)
+
 from .models import Database
 from .models import Collection
 
@@ -69,7 +73,7 @@ class DocumentService(object):
     def get_databases(self):
         request = HTTPRequest()
         request.method = 'GET'
-        request.host_locations = self._get_host_location()
+        request.host = self._get_host_location()
         request.path = self._get_path('dbs')
         request.headers = {
             'Cache-Control': 'no-cache',
@@ -105,14 +109,14 @@ class DocumentService(object):
         }
 
         request.headers['authorization'] = _get_authorization_token(
-            self.account_key, 
-            'dbs/{}'.format(database_name), 
-            'dbs', 
-            'GET', 
+            self.account_key,
+            'dbs/{}'.format(database_name),
+            'dbs',
+            'GET',
             request.headers['x-ms-date'])
 
-        self._perform_request(request)
-        return Database()
+        response = self._perform_request(request)
+        return _parse_json(response, Database)
 
 
     def _get_host_location(self):
