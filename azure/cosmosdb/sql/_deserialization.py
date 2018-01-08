@@ -38,10 +38,30 @@ def _parse_base_properties(response):
 
     return resource_properties
 
-def _parse_json(response, result_class):
+
+def _parse_json(response):
+    '''
+    Parses the response body (JSON) to dictionary.
+    '''
     if response is None or response.body is None:
         return None
     
-    str = response.body.decode('UTF-8')
-    obj = loads(str)
-    return result_class._parse(obj)
+    # Decode bytes to string
+    body = response.body.decode('UTF-8')
+    
+    # Parse JSON body to dictionary
+    return loads(body)
+
+
+def _parse_json_to_class(response, result_class):
+    '''
+    Parses the response body to a class of given type.
+    '''
+    if response is None or response.body is None:
+        return None
+    
+    # Parse JSON body to dictionary
+    dict = _parse_json(response)
+
+    # Return result class
+    return result_class._parse(dict)

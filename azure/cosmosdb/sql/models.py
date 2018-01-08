@@ -49,15 +49,21 @@ class Database(object):
         self._ts = None
 
     def _parse(obj):
-        db = Database()
-        db.id = obj['id']
-        db._rid = obj['_rid']
-        db._self = obj['_self']
-        db._etag = obj['_etag']
-        db._colls = obj['_colls']
-        db._users = obj['_users']
-        db._ts = int(obj['_ts'])
-        return db
+        if 'Databases' in obj:
+            dbs = []
+            for db in obj['Databases']: 
+                dbs.append(Database._parse(db))
+            return dbs
+        else:
+            db = Database()
+            db.id = obj['id']
+            db._rid = obj['_rid']
+            db._self = obj['_self']
+            db._etag = obj['_etag']
+            db._colls = obj['_colls']
+            db._users = obj['_users']
+            db._ts = int(obj['_ts'])
+            return db
 
 
 class Collection(object):

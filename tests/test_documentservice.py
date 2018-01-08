@@ -30,6 +30,7 @@ class DocumentServiceTest(unittest.TestCase):
         self.account_name = 'galaxy'
         self.account_key  = 'ZACfYMyDQHyGf0UZ2UdWCcfTyfQ0zmQnBLJ49AELlqBaHWseoRWpia7IOkQPXHKFfvFs98MMKNcUFY0CUfrDjA=='
         
+
     def test_get_datebase(self):
         database_name = 'ToDoList'
 
@@ -37,3 +38,11 @@ class DocumentServiceTest(unittest.TestCase):
         db = ds.get_database(database_name)
 
         self.assertIsNotNone(db)
+
+
+    def test_get_databases(self):
+        ds = DocumentService(self.account_name, self.account_key)
+        dbs = ds.get_databases()
+
+        self.assertIsNotNone(dbs)
+        self.assertGreater(len(dbs), 0)

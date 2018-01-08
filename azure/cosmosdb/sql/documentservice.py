@@ -48,7 +48,7 @@ from ._conversion import (
 )
 
 from ._deserialization import (
-    _parse_json
+    _parse_json_to_class
 )
 
 from .models import Database
@@ -71,6 +71,12 @@ class DocumentService(object):
 
 
     def get_databases(self):
+        '''
+        Retrieves a list of all databases.
+ 
+        :return: A list of Database.
+        :rtype: List<Database(:class:`~azure.cosmosdb.sql.models.Database`)>
+        '''
         request = HTTPRequest()
         request.method = 'GET'
         request.host = self._get_host_location()
@@ -80,13 +86,23 @@ class DocumentService(object):
             'User-Agent': DEFAULT_USER_AGENT_STRING,
             'Accept': 'application/json',
             'x-ms-version': DEFAULT_X_MS_VERSION,
-            'x-ms-documentdb-query-iscontinuationexpected': False,
-            'x-ms-date': (datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT'))
+            'x-ms-documentdb-query-iscontinuationexpected': _bool_to_str(False),
+            'x-ms-date': _datetime_to_utc_string(datetime.datetime.utcnow())
         }
+        request.headers['authorization'] = _get_authorization_token(
+            self.account_key,
+            '',
+            'dbs',
+            'GET',
+            request.headers['x-ms-date'])
+
+        response = self._perform_request(request)
+        return _parse_json_to_class(response, Database)
+
 
     def get_database(self, database_name):
         '''
-        Retrieves a Database by its name.
+        Retrieves a database by its name.
  
         :param str database_name:
             The name of the database to retrieve.
@@ -116,14 +132,14 @@ class DocumentService(object):
             request.headers['x-ms-date'])
 
         response = self._perform_request(request)
-        return _parse_json(response, Database)
+        return _parse_json_to_class(response, Database)
 
 
     def _get_host_location(self):
         return '{}.{}'.format(self.account_name, SERVICE_HOST_BASE)
 
 
-    def _get_path(self, resource_type, resource_id):
+    def _get_path(self, resource_type, resource_id=None):
         if resource_id:
             return '/{}/{}'.format(resource_type, resource_id)
         else:
