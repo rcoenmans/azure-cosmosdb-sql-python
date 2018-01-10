@@ -24,13 +24,10 @@
 import sys
 
 if sys.version_info < (3,):
-    from collections import Iterable
-
     _unicode_type = unicode
 else:
-    from collections.abc import Iterable
-
     _unicode_type = str
+
 
 class ResourceProperties(object):
     def __init__(self):
@@ -44,26 +41,9 @@ class Database(object):
         self._rid = None
         self._self = None
         self._etag = None
-        self._colls = None
-        self._users = None
+        self._colls = 'colls/'
+        self._users = 'users/'
         self._ts = None
-
-    def _parse(obj):
-        if 'Databases' in obj:
-            dbs = []
-            for db in obj['Databases']: 
-                dbs.append(Database._parse(db))
-            return dbs
-        else:
-            db = Database()
-            db.id = obj['id']
-            db._rid = obj['_rid']
-            db._self = obj['_self']
-            db._etag = obj['_etag']
-            db._colls = obj['_colls']
-            db._users = obj['_users']
-            db._ts = int(obj['_ts'])
-            return db
 
 
 class Collection(object):

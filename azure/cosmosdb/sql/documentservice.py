@@ -48,14 +48,15 @@ from ._conversion import (
 )
 
 from ._deserialization import (
-    _parse_json_to_class
+    _parse_json,
+    _parse_json_to_databases,
+    _parse_json_to_database
 )
 
 from .models import Database
 from .models import Collection
 
 from ._http import HTTPRequest
-from ._http import HTTPResponse
 from ._http.httpclient import _HTTPClient
 
 class DocumentService(object):
@@ -74,7 +75,7 @@ class DocumentService(object):
         '''
         Retrieves a list of all databases.
  
-        :return: A list of Database.
+        :return: A list of databases.
         :rtype: List<Database(:class:`~azure.cosmosdb.sql.models.Database`)>
         '''
         request = HTTPRequest()
@@ -96,8 +97,7 @@ class DocumentService(object):
             'GET',
             request.headers['x-ms-date'])
 
-        response = self._perform_request(request)
-        return _parse_json_to_class(response, Database)
+        return self._perform_request(request, _parse_json_to_databases)
 
 
     def get_database(self, database_name):
@@ -131,8 +131,7 @@ class DocumentService(object):
             'GET',
             request.headers['x-ms-date'])
 
-        response = self._perform_request(request)
-        return _parse_json_to_class(response, Database)
+        return self._perform_request(request, _parse_json_to_database)
 
 
     def _get_host_location(self):
@@ -146,6 +145,10 @@ class DocumentService(object):
             return '/{}'.format(resource_type)
 
 
-    def _perform_request(self, request):
+    def _perform_request(self, request, parser = None):
         response = self._http_client.perform_request(request)
-        return response
+        
+        if parser:
+            return parser(_parse_json(response))    
+        else:
+            return response

@@ -25,7 +25,8 @@ from json import loads
 from dateutil import parser
 
 from .models import (
-    ResourceProperties
+    ResourceProperties,
+    Database
 )
 
 def _parse_base_properties(response):
@@ -53,15 +54,20 @@ def _parse_json(response):
     return loads(body)
 
 
-def _parse_json_to_class(response, result_class):
-    '''
-    Parses the response body to a class of given type.
-    '''
-    if response is None or response.body is None:
-        return None
-    
-    # Parse JSON body to dictionary
-    dict = _parse_json(response)
+def _parse_json_to_databases(json):
+    dbs = []
+    for db in json['Databases']: 
+        dbs.append(_parse_json_to_database(db))
+    return dbs
 
-    # Return result class
-    return result_class._parse(dict)
+
+def _parse_json_to_database(json):
+    db = Database()
+    db.id = json['id']
+    db._rid = json['_rid']
+    db._self = json['_self']
+    db._etag = json['_etag']
+    db._colls = json['_colls']
+    db._users = json['_users']
+    db._ts = int(json['_ts'])
+    return db
